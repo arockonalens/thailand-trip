@@ -36,9 +36,12 @@
 :root { color-scheme: light; }
 
 * { box-sizing: border-box; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; scroll-padding-top: 72px; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--font); font-feature-settings: "cv11", "ss01"; -webkit-font-smoothing: antialiased; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(--font); font-feature-settings: "cv11", "ss01"; -webkit-font-smoothing: antialiased; }
 .num, td.amt, .stat b { font-variant-numeric: tabular-nums; }
 h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -0.015em; }
 h1 { font-size: clamp(2rem, 4.6vw, 2.75rem); line-height: 1.1; font-weight: 700; letter-spacing: -0.03em; }
