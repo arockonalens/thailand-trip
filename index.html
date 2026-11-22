@@ -291,7 +291,7 @@ details.connect ol { margin: 0; padding-left: 18px; color: var(--muted); display
 
   "people": ["Greg", "Jared"],
   "repo": "arockonalens/thailand-trip",
-  "fallbackRates": { "THB": 23.0, "MYR": 2.85, "SGD": 0.85, "date": "estimate" },
+  "fallbackRates": { "THB": 22.6, "MYR": 2.74, "SGD": 0.85, "date": "estimate" },
 
   "budget": [
     { "cat": "Flights", "planned": 1301.80, "note": "Both flights booked so far. The flight out of KL is still to come." },
@@ -558,7 +558,7 @@ const fmtCur = (n, cur) => cur === 'AUD' ? money(n) : n.toLocaleString('en-AU', 
 
 async function loadRates() {
   try {
-    const r = await fetch('https://api.frankfurter.app/latest?from=AUD&to=THB,MYR,SGD');
+    const r = await fetch('https://api.frankfurter.dev/v1/latest?base=AUD&symbols=THB,MYR,SGD');
     if (!r.ok) throw 0;
     const j = await r.json();
     rates = { AUD: 1, ...j.rates, date: j.date };
