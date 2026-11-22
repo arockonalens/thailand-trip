@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="en-AU">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
 <title>Thailand Trip Planner</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 36 36%22%3E%3CclipPath id=%22c%22%3E%3Crect y=%224%22 width=%2236%22 height=%2228%22 rx=%224%22/%3E%3C/clipPath%3E%3Cg clip-path=%22url(%23c)%22%3E%3Crect y=%224%22 width=%2236%22 height=%2228%22 fill=%22%23A51931%22/%3E%3Crect y=%228.67%22 width=%2236%22 height=%2218.67%22 fill=%22%23F4F5F8%22/%3E%3Crect y=%2213.33%22 width=%2236%22 height=%229.33%22 fill=%22%232D2A4A%22/%3E%3C/g%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -230,19 +235,25 @@ details.connect ol { margin: 0; padding-left: 18px; color: var(--ink-2); display
 .cheat th:nth-child(odd), .cheat td:nth-child(odd) { text-align: left; }
 .cheat td:nth-child(2), .cheat th:nth-child(2) { padding-right: 24px; } .cheat td:nth-child(even) { color: var(--ink-2); }
 
-/* entry */
-.countries { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
-@media (max-width: 760px) { .countries { grid-template-columns: 1fr; } }
-.country { padding: 20px 22px; display: grid; gap: 14px; align-content: start; }
-.country .top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-.country .top span { font-size: 13px; color: var(--muted); }
-.country ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
-.country li { display: grid; gap: 3px; font-size: 14.5px; }
-.country li b { font-weight: 600; }
-.country li p { color: var(--ink-2); font-size: 13.5px; }
-.country li .win { color: var(--accent); font-size: 13px; font-weight: 500; }
-.country li a { font-size: 13.5px; font-weight: 500; text-decoration: none; }
-.country li a:hover { text-decoration: underline; }
+/* travel checklist */
+.cklist { display: grid; gap: 16px; }
+.ckg-h { padding: 14px 22px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.ckg-h span { font-size: 13px; color: var(--muted); }
+.ck { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 20px; padding: 14px 22px; align-items: start; }
+.ck + .ck { border-top: 1px solid var(--line); }
+.ck .txt { display: grid; gap: 3px; min-width: 0; }
+.ck .txt b { font-weight: 600; font-size: 14.5px; }
+.ck .txt p { color: var(--ink-2); font-size: 13.5px; }
+.ck .txt .win { color: var(--accent); font-size: 13px; font-weight: 500; }
+.ck .txt a { font-size: 13.5px; font-weight: 500; text-decoration: none; width: fit-content; }
+.ck .txt a:hover { text-decoration: underline; }
+.ck.all-done .txt b { color: var(--muted); text-decoration: line-through; }
+.ticks { display: flex; gap: 6px; }
+.tick { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 12px 0 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); font: 500 13.5px var(--font); cursor: pointer; white-space: nowrap; }
+.tick::before { content: ""; width: 16px; height: 16px; border-radius: 5px; border: 1.5px solid color-mix(in srgb, var(--muted) 60%, var(--line)); box-sizing: border-box; flex: none; }
+.tick[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.tick[aria-pressed="true"]::before { background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat; border-color: var(--accent); }
+@media (max-width: 600px) { .ck { grid-template-columns: 1fr; } }
 
 /* to do */
 .checks { list-style: none; margin: 0; padding: 0; }
@@ -740,90 +751,164 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
  ],
  "entry": [
   {
-   "country": "Singapore",
-   "flag": "SG",
-   "when": "Mon 1 Feb, transit only",
-   "arrive": null,
+   "group": "Before you leave",
+   "when": "Before Mon 1 Feb",
    "items": [
     {
-     "text": "No arrival card if you stay airside",
-     "note": "SQ248 to SQ732 is a 1h 05m connection on one ticket. You only need the SG Arrival Card if you leave the airport.",
+     "id": "passport",
+     "each": true,
+     "text": "Passport valid 6+ months past the trip",
+     "note": "Valid until at least mid-August 2027, with 2 blank pages. Thailand and Malaysia both check.",
+     "link": "https://www.passports.gov.au",
+     "linkText": "Australian Passport Office"
+    },
+    {
+     "id": "insurance",
+     "each": true,
+     "text": "Travel insurance",
+     "note": "Check scooter and adventure-activity cover (ATV, ziplining).",
+     "link": "https://www.smartraveller.gov.au/before-you-go/insurance",
+     "linkText": "Smartraveller: insurance"
+    },
+    {
+     "id": "leave",
+     "each": true,
+     "text": "Annual leave booked, Mon 1 to Thu 11 Feb",
+     "note": "You land at 06:40 on the 11th, so maybe take that day too."
+    },
+    {
+     "id": "cards",
+     "each": true,
+     "text": "Card with no foreign transaction fees, travel notice set",
+     "note": "Grab, hotels and restaurants all take cards."
+    },
+    {
+     "id": "phone",
+     "each": true,
+     "text": "Roaming or an eSIM for Thailand and Malaysia",
+     "note": "An eSIM covering both countries is usually cheapest."
+    },
+    {
+     "id": "grab",
+     "each": true,
+     "text": "Grab app installed and a card added",
+     "note": "Rides and food delivery in both Phuket and KL.",
+     "link": "https://www.grab.com",
+     "linkText": "grab.com"
+    },
+    {
+     "id": "alerts",
+     "each": false,
+     "text": "Subscribe to Smartraveller alerts",
+     "note": "Free advice updates for Thailand and Malaysia.",
+     "link": "https://www.smartraveller.gov.au/before-you-go/subscribe",
+     "linkText": "Smartraveller: subscribe"
+    },
+    {
+     "id": "seats",
+     "each": false,
+     "text": "Pick seats on SQ248 and SQ732",
+     "note": "In Aunt Betty's Manage My Booking."
+    },
+    {
+     "id": "baht",
+     "each": false,
+     "text": "Thai baht cash for the villa float",
+     "note": "$520 for the two of you. All villa purchases are cash."
+    }
+   ]
+  },
+  {
+   "group": "Singapore",
+   "when": "Mon 1 Feb, transit",
+   "items": [
+    {
+     "id": "sg",
+     "each": false,
+     "text": "Stay airside for the 1h 05m connection",
+     "note": "No SG Arrival Card needed unless you leave the airport. Bags are checked through to Phuket on one ticket.",
      "link": "https://www.ica.gov.sg/enter-transit-depart/entering-singapore/sg-arrival-card",
      "linkText": "ICA: SG Arrival Card"
     }
    ]
   },
   {
-   "country": "Thailand",
-   "flag": "TH",
+   "group": "Thailand",
    "when": "Arrive Mon 1 Feb, Phuket",
    "arrive": "2027-02-01",
    "items": [
     {
+     "id": "tdac",
+     "each": true,
      "text": "Thailand Digital Arrival Card (TDAC)",
-     "note": "Free. Fill it in within the 3 days before you land. Use only the official site; copycat sites charge a fee.",
+     "note": "Free. Use only the official site; copycat sites charge a fee.",
+     "window": 3,
      "link": "https://tdac.immigration.go.th",
-     "linkText": "tdac.immigration.go.th",
-     "window": 3
+     "linkText": "tdac.immigration.go.th"
     },
     {
-     "text": "Visa: Australians are visa-exempt for short stays",
-     "note": "6 nights is well inside the limit, but Thailand has been changing the allowed length. Check before you go.",
+     "id": "th-visa",
+     "each": true,
+     "text": "Check the visa-exempt stay for Australians",
+     "note": "6 nights is well inside it, but Thailand has been changing the length.",
      "link": "https://www.thaievisa.go.th",
      "linkText": "Thai e-Visa (official)"
     },
     {
-     "text": "Passport valid 6+ months",
-     "note": "Counted from the day you arrive",
+     "id": "th-advice",
+     "each": false,
+     "text": "Read the latest Smartraveller advice for Thailand",
+     "note": "",
      "link": "https://www.smartraveller.gov.au/destinations/asia/thailand",
      "linkText": "Smartraveller: Thailand"
     }
    ]
   },
   {
-   "country": "Malaysia",
-   "flag": "MY",
+   "group": "Malaysia",
    "when": "Arrive Sun 7 Feb, Kuala Lumpur",
    "arrive": "2027-02-07",
    "items": [
     {
-     "text": "Malaysia Digital Arrival Card (MDAC)",
-     "note": "Free. Fill it in within the 3 days before you land.",
-     "link": "https://imigresen-online.imi.gov.my/mdac/main",
-     "linkText": "MDAC (official)",
-     "window": 3
+     "id": "ak825",
+     "each": false,
+     "text": "AirAsia AK825: check in online and check the bag allowance",
+     "note": "Phuket → KL, Sun 7 Feb 13:35."
     },
     {
-     "text": "Visa: Australians are visa-free for short stays",
-     "note": "Usually up to 90 days. Confirm on Smartraveller.",
+     "id": "mdac",
+     "each": true,
+     "text": "Malaysia Digital Arrival Card (MDAC)",
+     "note": "Free, on the official immigration site.",
+     "window": 3,
+     "link": "https://imigresen-online.imi.gov.my/mdac/main",
+     "linkText": "MDAC (official)"
+    },
+    {
+     "id": "my-visa",
+     "each": true,
+     "text": "Check the visa-free stay for Australians",
+     "note": "Usually up to 90 days.",
      "link": "https://www.smartraveller.gov.au/destinations/asia/malaysia",
      "linkText": "Smartraveller: Malaysia"
-    },
-    {
-     "text": "Passport valid 6+ months",
-     "note": "With at least 2 blank pages",
-     "link": "https://www.imi.gov.my",
-     "linkText": "Malaysian Immigration"
     }
    ]
   },
   {
-   "country": "Before you leave",
-   "flag": "AU",
-   "when": "Any time before 1 Feb",
-   "arrive": null,
+   "group": "Going home",
+   "when": "Wed 10 Feb",
    "items": [
     {
-     "text": "Register for Smartraveller alerts",
-     "note": "Free travel advice updates for both countries",
-     "link": "https://www.smartraveller.gov.au/before-you-go/subscribe",
-     "linkText": "Smartraveller: subscribe"
+     "id": "ba33",
+     "each": false,
+     "text": "BA33: check which airline operates it, then check in online",
+     "note": "British Airways doesn't usually fly KL → Melbourne itself, so it's likely a partner airline."
     },
     {
-     "text": "Travel insurance",
-     "note": "Check scooter and adventure-activity cover (ATV, ziplining)",
-     "link": "https://www.smartraveller.gov.au/before-you-go/insurance",
-     "linkText": "Smartraveller: insurance"
+     "id": "bags",
+     "each": false,
+     "text": "Ask The RuMa to hold your bags after the 12:00 check-out",
+     "note": "The flight leaves at 19:45."
     }
    ]
   }
@@ -845,53 +930,8 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
    "done": true
   },
   {
-   "text": "Watch for AirAsia's confirmation of AK825",
-   "note": "Confirmed by AirAsia",
-   "done": true
-  },
-  {
-   "text": "Book annual leave: Mon 1 to Thu 11 Feb",
-   "note": "You land at 06:40 on the 11th, so maybe take that day too",
-   "done": false
-  },
-  {
    "text": "Send Jakob dietary needs, breakfast opt-ins and bar pre-stock",
    "note": "",
-   "done": false
-  },
-  {
-   "text": "Passport valid 6+ months past the trip",
-   "note": "Thailand and Malaysia both check",
-   "done": false
-  },
-  {
-   "text": "Travel insurance",
-   "note": "",
-   "done": false
-  },
-  {
-   "text": "Thailand Digital Arrival Card (TDAC)",
-   "note": "Online, within 3 days before 1 Feb",
-   "done": false
-  },
-  {
-   "text": "Malaysia Digital Arrival Card (MDAC)",
-   "note": "Online, within 3 days before 7 Feb",
-   "done": false
-  },
-  {
-   "text": "Get Thai baht cash for the float",
-   "note": "All villa purchases are cash",
-   "done": false
-  },
-  {
-   "text": "Pick seats on SQ248 and SQ732",
-   "note": "Via Aunt Betty's Manage My Booking",
-   "done": false
-  },
-  {
-   "text": "Ask The RuMa to hold bags on Wed 10 Feb",
-   "note": "Check-out 12:00, flight 19:45",
    "done": false
   }
  ],
@@ -911,7 +951,7 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
 <div class="bar"><div class="bar-in">
   <span class="brand" id="brand"></span>
   <nav aria-label="Sections">
-    <a href="#overview">Overview</a><a href="#flights">Flights</a><a href="#days">Itinerary</a><a href="#money">Budget</a><a href="#currency">Currency</a><a href="#entry">Entry</a><a href="#todos">To do</a>
+    <a href="#overview">Overview</a><a href="#flights">Flights</a><a href="#days">Itinerary</a><a href="#money">Budget</a><a href="#currency">Currency</a><a href="#entry">Checklist</a><a href="#todos">To do</a>
   </nav>
 </div></div>
 
@@ -994,8 +1034,8 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
   </section>
 
   <section id="entry">
-    <div class="sh"><h2>Entry requirements</h2><p>For Australian passports</p></div>
-    <div class="countries" id="countries"></div>
+    <div class="sh"><h2>Travel checklist</h2><p><span id="ck-count"></span> · <span id="ck-mode"></span></p></div>
+    <div class="cklist" id="countries"></div>
   </section>
 
   <section id="todos">
@@ -1249,7 +1289,7 @@ $('ledger').addEventListener('click', async ev => {
 $('f-save').addEventListener('click', () => {
   const t = $('f-token').value.trim(); if (t) store.set('tt_token', t);
   store.set('tt_me', $('f-me').value); $('f-paid').value = $('f-me').value; $('f-token').value = '';
-  $('connect').open = false; load();
+  $('connect').open = false; load(); loadChecks();
 });
 $('f-forget').addEventListener('click', () => { store.set('tt_token', null); setSync('Disconnected'); });
 
@@ -1265,14 +1305,53 @@ function renderFx() {
 $('fx-amt').addEventListener('input', renderFx);
 $('fx-cur').addEventListener('change', renderFx);
 
-// ----- entry requirements -----
-$('countries').innerHTML = T.entry.map(c => `<div class="card country"><div class="top"><h3>${esc(c.country)}</h3><span>${esc(c.when)}</span></div>
-  <ul>${c.items.map(it => {
+// ----- travel checklist (ticks shared via checks.json in the repo, or this phone only) -----
+const ckApi = `https://api.github.com/repos/${T.repo}/contents/checks.json`;
+let checks = {};
+try { checks = JSON.parse(store.get('tt_checks') || '{}'); } catch {}
+async function fetchChecks() {
+  const h = { Accept: 'application/vnd.github+json' }; if (token()) h.Authorization = 'Bearer ' + token();
+  const r = await fetch(ckApi + '?ref=main&t=' + Date.now(), { headers: h, cache: 'no-store' });
+  if (r.status === 404) return { data: {}, sha: null };
+  if (!r.ok) throw new Error('load ' + r.status);
+  const j = await r.json(); return { data: JSON.parse(unb64(j.content)), sha: j.sha };
+}
+async function loadChecks() {
+  try { const { data } = await fetchChecks(); if (token() || Object.keys(data).length) checks = data; } catch {}
+  renderChecklist();
+}
+async function saveTick(id, who, val) {
+  checks[id] = { ...(checks[id] || {}), [who]: val }; renderChecklist();
+  if (!token()) { store.set('tt_checks', JSON.stringify(checks)); return; }
+  for (let i = 0; i < 3; i++) {
+    try {
+      const cur = await fetchChecks(); const next = { ...cur.data, [id]: { ...(cur.data[id] || {}), [who]: val } };
+      const body = { message: `Checklist: ${id} ${who} ${val ? 'done' : 'not done'}`, content: b64(JSON.stringify(next, null, 1) + '\n'), branch: 'main' };
+      if (cur.sha) body.sha = cur.sha;
+      const r = await fetch(ckApi, { method: 'PUT', headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + token() }, body: JSON.stringify(body) });
+      if (r.status === 409 || r.status === 422) continue;
+      if (!r.ok) throw 0;
+      checks = next; renderChecklist(); return;
+    } catch { break; }
+  }
+  checks[id] = { ...(checks[id] || {}), [who]: !val }; renderChecklist(); setSync('Couldn’t save that tick. Try again', 'err');
+}
+function renderChecklist() {
+  let total = 0, done = 0;
+  $('countries').innerHTML = T.entry.map(g => `<div class="card"><div class="ckg-h"><h3>${esc(g.group)}</h3><span>${esc(g.when)}</span></div>${g.items.map(it => {
+    const who = it.each ? P : ['Done'], st = checks[it.id] || {};
+    const all = who.every(w => st[w]); total += who.length; done += who.filter(w => st[w]).length;
     let win = '';
-    if (it.window && c.arrive) { const d = new Date(c.arrive + 'T00:00:00'), s = new Date(d); s.setDate(d.getDate() - it.window);
-      win = `<span class="win">Submit between ${fmt(s, {weekday:'short', day:'numeric', month:'short'})} and ${fmt(d, {weekday:'short', day:'numeric', month:'short'})}</span>`; }
-    return `<li><b>${esc(it.text)}</b><p>${esc(it.note)}</p>${win}<a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.linkText)} →</a></li>`;
-  }).join('')}</ul></div>`).join('');
+    if (it.window && g.arrive) { const d = new Date(g.arrive + 'T00:00:00'), s0 = new Date(d); s0.setDate(d.getDate() - it.window);
+      win = `<span class="win">Submit between ${fmt(s0, {weekday:'short', day:'numeric', month:'short'})} and ${fmt(d, {weekday:'short', day:'numeric', month:'short'})}</span>`; }
+    return `<div class="ck${all ? ' all-done' : ''}"><div class="txt"><b>${esc(it.text)}</b>${it.note ? `<p>${esc(it.note)}</p>` : ''}${win}${it.link ? `<a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.linkText)} →</a>` : ''}</div>
+      <div class="ticks">${who.map(w => `<button type="button" class="tick" data-ck="${esc(it.id)}" data-who="${esc(w)}" aria-pressed="${st[w] ? 'true' : 'false'}" aria-label="${esc(it.text)}: ${esc(w)}">${esc(w)}</button>`).join('')}</div></div>`;
+  }).join('')}</div>`).join('');
+  $('ck-count').textContent = `${done} of ${total} ticked`;
+  $('ck-mode').textContent = token() ? 'Shared with both phones' : 'Saved on this phone only until you connect it (Budget section)';
+}
+$('countries').addEventListener('click', ev => { const b = ev.target.closest('[data-ck]'); if (!b) return; saveTick(b.dataset.ck, b.dataset.who, b.getAttribute('aria-pressed') !== 'true'); });
+renderChecklist(); loadChecks();
 
 // ----- to do -----
 $('todocount').textContent = T.todo.filter(t => t.done).length + ' of ' + T.todo.length + ' done';
@@ -1297,7 +1376,7 @@ $('toast-reload').addEventListener('click', () => location.reload());
 $('toast-close').addEventListener('click', async () => { $('toast').hidden = true; const r = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' }).catch(() => null); if (r && r.ok) dismissed = hash(await r.text()); });
 checkForUpdate();
 setInterval(() => { if (!document.hidden) checkForUpdate(); }, 60000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { checkForUpdate(); load(); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { checkForUpdate(); load(); loadChecks(); } });
 
 renderSync(); renderFx(); renderMoney(); load(); loadRates();
 </script>
