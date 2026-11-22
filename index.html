@@ -481,13 +481,13 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
   {
    "id": "kul",
    "name": "Kuala Lumpur",
-   "place": "Malaysia",
+   "place": "The RuMa Hotel and Residences",
    "code": "KUL",
    "lat": 3.14,
    "lng": 101.69,
    "nights": 3,
    "color": "#5a6b8c",
-   "summary": "Three nights before the flight home. Hotel and plans still to come.",
+   "summary": "Three nights in the city centre before the flight home.",
    "days": [
     {
      "title": "Arrive in KL",
@@ -501,9 +501,9 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
       ],
       [
        "eve",
-       "Check in to the hotel",
+       "Check in to The RuMa",
        "",
-       "Hotel still to book"
+       "Check-in from 15:00"
       ]
      ]
     },
@@ -534,10 +534,16 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
      "travel": true,
      "items": [
       [
+       "12:00",
+       "Check out of The RuMa",
+       "",
+       "Ask them to hold your bags until you leave for the airport"
+      ],
+      [
        "day",
        "Last day in KL",
        "",
-       "Ask the hotel for a late check-out or bag storage: the flight is in the evening"
+       ""
       ],
       [
        "19:45",
@@ -559,6 +565,19 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
       ]
      ]
     }
+   ],
+   "stay": {
+    "Where": "The RuMa Hotel and Residences, 7 Jalan Kia Peng",
+    "Check in": "Sun 7 Feb, from 15:00",
+    "Check out": "Wed 10 Feb, by 12:00",
+    "Cost": "AUD 2,554.80 for 3 nights, paid",
+    "Cancelling": "Costs AUD 2,482, so treat it as non-refundable",
+    "Booked": "Booking.com, in Greg's name"
+   },
+   "rules": [
+    "Check-out is 12:00 but BA33 leaves at 19:45: ask the hotel to hold your bags, or for a late check-out.",
+    "Malaysian tourism tax is included in the price.",
+    "Amenities: pool, restaurant, free Wi-Fi."
    ]
   }
  ],
@@ -688,8 +707,8 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
   },
   {
    "cat": "Kuala Lumpur",
-   "planned": null,
-   "note": "Hotel for 3 nights, 7 to 10 Feb, plus spending. Still to plan"
+   "planned": 2554.8,
+   "note": "The RuMa, 3 nights, paid by Greg. Spending money not budgeted yet"
   },
   {
    "cat": "Shopping",
@@ -804,9 +823,14 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
    "done": false
   },
   {
-   "text": "Book a KL hotel for Sun 7 to Wed 10 Feb",
-   "note": "3 nights. Ask for a late check-out, as BA33 leaves at 19:45",
+   "text": "Jared pays Greg $1,277.40 for half the KL hotel",
+   "note": "The IOU in the budget section tracks it",
    "done": false
+  },
+  {
+   "text": "Book a KL hotel for Sun 7 to Wed 10 Feb",
+   "note": "Booked: The RuMa Hotel and Residences",
+   "done": true
   },
   {
    "text": "Watch for AirAsia's confirmation of AK825",
@@ -852,10 +876,14 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
    "text": "Pick seats on SQ248 and SQ732",
    "note": "Via Aunt Betty's Manage My Booking",
    "done": false
+  },
+  {
+   "text": "Ask The RuMa to hold bags on Wed 10 Feb",
+   "note": "Check-out 12:00, flight 19:45",
+   "done": false
   }
  ],
  "open": [
-  "Where you're staying in Kuala Lumpur",
   "What you want to do in KL"
  ],
  "end": "2027-02-11",
@@ -1050,7 +1078,7 @@ let dayN = 0;
 $('legs').innerHTML = T.stops.map(s => {
   let h = `<div class="leg"><div class="leg-h"><span class="pin" style="background:${s.color}"></span><h2>${esc(s.name)}</h2><span class="muted">${nightsLabel(s.nights)} · ${esc(s.place)}</span></div>`;
   if (s.stay) h += `<div class="card pad" style="margin-bottom:12px"><div class="facts">${Object.entries(s.stay).map(([k, v]) => `<div><span class="k">${esc(k)}</span><b>${esc(v)}</b></div>`).join('')}</div>
-    <details class="rules"><summary>House rules</summary><ul>${s.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ul></details></div>`;
+    <details class="rules"><summary>${esc(s.rulesTitle || 'House rules')}</summary><ul>${s.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ul></details></div>`;
   if (!s.days.length) return h + `<div class="card empty">Plans to come. Send the hotel and anything you want to do.</div></div>`;
   if (dayN > 0 && s.days[0] && s.days[0].travel) dayN--; // arrival shares the departure day of the previous stop
   const rows = s.days.map(d => {
@@ -1172,7 +1200,7 @@ function renderMoney() {
     return `<div class="brow"><span>${esc(b.cat)}</span><span class="v">${money(s)} <span>/ ${b.planned == null ? '—' : money(b.planned)}</span></span>
       ${b.planned ? `<div class="meter"><i class="${s > b.planned + 0.01 ? 'over' : ''}" style="width:${pct}%"></i></div>` : ''}
       ${b.note ? `<span class="note">${esc(b.note)}</span>` : ''}</div>`;
-  }).join('') + `<div class="brow total"><span>Total</span><span class="v">${money(spent)} <span>/ ${money(planned)}</span></span><span class="note" style="font-weight:400">${money(Math.max(0, planned - spent))} of the plan left to spend. Kuala Lumpur isn’t budgeted yet.</span></div>`;
+  }).join('') + `<div class="brow total"><span>Total</span><span class="v">${money(spent)} <span>/ ${money(planned)}</span></span><span class="note" style="font-weight:400">${money(Math.max(0, planned - spent))} of the plan left to spend. KL spending money isn’t budgeted yet.</span></div>`;
 }
 
 // ----- expense form -----
