@@ -710,32 +710,32 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
   {
    "cat": "Activities",
    "planned": 400,
-   "note": "Estimate: yoga, massages, Phuket Town. Catamaran, van and bartender are Jakob's shout"
+   "note": "About $200 each: yoga, massages, a Phuket Town activity, KL sights"
   },
   {
    "cat": "Food & drink",
-   "planned": 600,
-   "note": "Estimate: lunches, breakfasts and dinners out"
+   "planned": 1660,
+   "note": "About $830 each: breakfasts, lunches and dinners out, Café del Mar, drinks, GU:UM (~$150 each)"
   },
   {
    "cat": "Transport",
-   "planned": 120,
-   "note": "Estimate: airport transfers and Grab"
+   "planned": 160,
+   "note": "About $80 each: Grab and airport transfers"
   },
   {
    "cat": "Kuala Lumpur",
    "planned": 2554.8,
-   "note": "The RuMa, 3 nights, paid by Greg. Spending money not budgeted yet"
+   "note": "The RuMa, 3 nights, paid from 2Up. KL meals sit under Food & drink"
   },
   {
    "cat": "Shopping",
-   "planned": null,
-   "note": ""
+   "planned": 200,
+   "note": "About $100 each"
   },
   {
    "cat": "Other",
-   "planned": null,
-   "note": ""
+   "planned": 60,
+   "note": "Airport food and small extras"
   }
  ],
  "entry": [
@@ -840,11 +840,6 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
    "done": false
   },
   {
-   "text": "Jared pays Greg $1,277.40 for half the KL hotel",
-   "note": "The IOU in the budget section tracks it",
-   "done": false
-  },
-  {
    "text": "Book a KL hotel for Sun 7 to Wed 10 Feb",
    "note": "Booked: The RuMa Hotel and Residences",
    "done": true
@@ -906,9 +901,9 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
  "end": "2027-02-11",
  "lede": "Jakob's 30th at a villa in Bang Tao, then three nights in Kuala Lumpur.",
  "saver": {
-  "name": "Thailand saver",
+  "name": "Thailand saver + 2Up",
   "target": 5000,
-  "note": "Each of you puts in $5,000. Flights and the villa are paid from here."
+  "note": "Everything is paid from the joint pot. Target $5,000 each."
  }
 }
 </script>
@@ -1197,7 +1192,7 @@ function renderMoney() {
       return `<div class="sv"><div class="svh"><span>${p} has put in</span><b>${money(v)} <span class="muted">/ ${money(tgt)}</span></b></div>
         <div class="meter"><i style="width:${Math.min(100, v / tgt * 100)}%"></i></div>
         <span class="${left > 0.01 ? 'due' : 'okt'}">${left > 0.01 ? `${money(left)} still to add` : 'Target reached'}</span></div>`; }).join('')}
-      <div class="sv"><div class="svh"><span>Balance in the saver</span><b>${money(sIn - sOut)}</b></div>
+      <div class="sv"><div class="svh"><span>Balance in the pot</span><b>${money(sIn - sOut)}</b></div>
         <span class="muted small">${money(sIn)} in, ${money(sOut)} paid out</span></div></div>`;
   $('iou').innerHTML = `<div class="${square ? '' : 'owe'}"><span>${square ? 'IOU' : `${bal > 0 ? Bp : A} owes ${bal > 0 ? A : Bp}`}</span><b>${square ? 'All square' : money(Math.abs(bal))}</b></div>
     <div><span>Spent so far</span><b>${money(spent)}</b></div>` +
@@ -1218,7 +1213,7 @@ function renderMoney() {
     return `<div class="brow"><span>${esc(b.cat)}</span><span class="v">${money(s)} <span>/ ${b.planned == null ? '—' : money(b.planned)}</span></span>
       ${b.planned ? `<div class="meter"><i class="${s > b.planned + 0.01 ? 'over' : ''}" style="width:${pct}%"></i></div>` : ''}
       ${b.note ? `<span class="note">${esc(b.note)}</span>` : ''}</div>`;
-  }).join('') + `<div class="brow total"><span>Total</span><span class="v">${money(spent)} <span>/ ${money(planned)}</span></span><span class="note" style="font-weight:400">${money(Math.max(0, planned - spent))} of the plan left to spend. KL spending money isn’t budgeted yet.</span></div>`;
+  }).join('') + `<div class="brow total"><span>Total</span><span class="v">${money(spent)} <span>/ ${money(planned)}</span></span><span class="note" style="font-weight:400">${money(Math.max(0, planned - spent))} of the plan left to spend. Spending figures are estimates.</span></div>`;
 }
 
 // ----- expense form -----
