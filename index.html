@@ -254,6 +254,16 @@ details.connect ol { margin: 0; padding-left: 18px; color: var(--ink-2); display
 .checks small { display: block; color: var(--muted); font-size: 13px; }
 .open { margin: 0; padding: 0 22px 18px 40px; color: var(--ink-2); font-size: 14.5px; display: grid; gap: 8px; }
 footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
+
+/* update pop-up */
+.toast { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 0); z-index: 20;
+  width: min(440px, calc(100% - 32px)); background: var(--ink); color: var(--surface); border-radius: 12px; padding: 12px 12px 12px 18px;
+  display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.18); font-size: 14.5px; }
+.toast[hidden] { display: none; }
+.toast span { flex: 1; min-width: 0; }
+.toast button { height: 36px; background: var(--surface); color: var(--ink); border-color: var(--surface); }
+.toast .close { background: none; border: 0; color: var(--surface); opacity: .7; padding: 0 6px; font-size: 18px; }
+@media (prefers-reduced-motion: no-preference) { .toast:not([hidden]) { animation: rise .25s ease-out; } @keyframes rise { from { opacity: 0; transform: translate(-50%, 8px); } } }
 </style>
 
 <!-- ===== TRIP DATA: Claude edits this block; the page draws itself from it ===== -->
@@ -997,6 +1007,7 @@ footer { margin-top: 56px; color: var(--muted); font-size: 13px; }
 
   <footer>Send Claude any booking, plan or change and this page is updated.</footer>
 </main>
+<div class="toast" id="toast" role="status" hidden><span>This planner has been updated.</span><button type="button" id="toast-reload">Reload</button><button type="button" class="close" id="toast-close" aria-label="Dismiss">×</button></div>
 
 <script>
 const T = JSON.parse(document.getElementById('trip').textContent);
@@ -1264,6 +1275,26 @@ $('countries').innerHTML = T.entry.map(c => `<div class="card country"><div clas
 $('todocount').textContent = T.todo.filter(t => t.done).length + ' of ' + T.todo.length + ' done';
 $('todo').innerHTML = T.todo.map(t => `<li class="${t.done ? 'done' : ''}"><span class="box${t.done ? ' on' : ''}"></span><span>${esc(t.text)}${t.note ? `<small>${esc(t.note)}</small>` : ''}</span></li>`).join('');
 $('open').innerHTML = T.open.map(o => `<li>${esc(o)}</li>`).join('');
+
+
+// ----- "page updated" pop-up: compare the live file with the one we loaded -----
+const hash = t => { let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return h; };
+let baseline = null, dismissed = null;
+async function checkForUpdate() {
+  if (location.protocol === 'file:') return;
+  try {
+    const r = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const h = hash(await r.text());
+    if (baseline === null) { baseline = h; return; }
+    if (h !== baseline && h !== dismissed) $('toast').hidden = false;
+  } catch {}
+}
+$('toast-reload').addEventListener('click', () => location.reload());
+$('toast-close').addEventListener('click', async () => { $('toast').hidden = true; const r = await fetch(location.pathname + '?v=' + Date.now(), { cache: 'no-store' }).catch(() => null); if (r && r.ok) dismissed = hash(await r.text()); });
+checkForUpdate();
+setInterval(() => { if (!document.hidden) checkForUpdate(); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { checkForUpdate(); load(); } });
 
 renderSync(); renderFx(); renderMoney(); load(); loadRates();
 </script>
