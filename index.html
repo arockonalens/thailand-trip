@@ -1,0 +1,719 @@
+<title>Thailand Trip Planner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: summary + map up top, then flights, day by day, money and to-dos. One column on phone. */
+:root {
+  --bg: #f5f7f4;
+  --surface: #ffffff;
+  --ink: #17211d;
+  --muted: #5d6b64;
+  --line: #dde3de;
+  --jungle: #1f5c4a;
+  --saffron: #b86f05;
+  --sea: #2a7f9e;
+  --land: #e4ebe2;
+  --ok: #2f7d4f;
+  --todo: #b25e09;
+  --warn: #b3261e;
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #101614; --surface: #17201d; --ink: #e8eee9; --muted: #98a69f; --line: #2a3632;
+  --jungle: #6cc3a3; --saffron: #f0a838; --sea: #5fb4d3; --land: #1d2a26; --ok: #6cc98e; --todo: #f0a838; --warn: #ff8a80;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #101614; --surface: #17201d; --ink: #e8eee9; --muted: #98a69f; --line: #2a3632;
+  --jungle: #6cc3a3; --saffron: #f0a838; --sea: #5fb4d3; --land: #1d2a26; --ok: #6cc98e; --todo: #f0a838; --warn: #ff8a80;
+  color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--body); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: 1.35rem; font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 500; }
+.label { font: 500 11px/1.2 var(--body); text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.chip { display: inline-block; font: 500 11px/1 var(--body); letter-spacing: .05em; text-transform: uppercase;
+  border: 1px solid currentColor; border-radius: 999px; padding: 5px 9px; color: var(--jungle); }
+
+header { display: grid; gap: 14px; margin-bottom: 28px; }
+.facts { display: flex; flex-wrap: wrap; gap: 12px 32px; }
+.fact { display: grid; gap: 6px; }
+.fact b { font: 500 1.05rem/1.25 var(--display); }
+
+.alert { display: grid; gap: 4px; border: 1px solid var(--warn); color: var(--ink); border-radius: 12px; padding: 12px 16px; margin-bottom: 24px;
+  background: color-mix(in srgb, var(--warn) 7%, var(--surface)); }
+.alert .label { color: var(--warn); }
+
+.top { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; margin-bottom: 36px; }
+@media (max-width: 760px) { .top { grid-template-columns: 1fr; } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-width: 0; }
+
+/* route */
+.strip { display: flex; height: 12px; border-radius: 6px; overflow: hidden; margin: 14px 0 18px; gap: 2px; }
+.strip span { display: block; }
+.strip .tbc { background: repeating-linear-gradient(135deg, var(--line) 0 6px, transparent 6px 12px); }
+.stop-row { display: grid; grid-template-columns: 22px minmax(0,1fr) auto; gap: 12px; align-items: start; padding: 12px 0; border-top: 1px solid var(--line); }
+.stop-row:first-child { border-top: 0; }
+.dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 5px; }
+.stop-row .when { font-size: 13px; color: var(--muted); text-align: right; white-space: nowrap; }
+.stop-row p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+
+/* map */
+.map svg { width: 100%; height: auto; max-height: 540px; display: block; }
+.map .land { fill: var(--land); stroke: var(--muted); stroke-opacity: .35; stroke-width: 1; }
+.map .grid { stroke: var(--line); stroke-width: .6; stroke-dasharray: 2 4; }
+.map .route { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-dasharray: 5 5; opacity: .6; }
+.map text { font: 500 12px var(--body); fill: var(--ink); }
+.map .code { font: 500 10px var(--mono); fill: var(--muted); }
+.map .country { font: 500 9.5px var(--body); fill: var(--muted); letter-spacing: .14em; }
+.map .sea { font: italic 11px var(--body); fill: var(--sea); letter-spacing: .06em; }
+
+section { margin-bottom: 40px; }
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+
+/* flights */
+.flights { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.flight { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; min-width: 0; }
+.flight .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.legs { display: grid; gap: 8px; }
+.fleg { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 10px; align-items: center; }
+.fleg .port { font: 500 1.35rem/1 var(--mono); }
+.fleg .port small { display: block; font: 12px/1.4 var(--body); color: var(--muted); margin-top: 4px; }
+.fleg .line { height: 1px; background: var(--line); position: relative; }
+.fleg .line span { position: absolute; left: 50%; top: -9px; transform: translateX(-50%); background: var(--surface); padding: 0 6px; font: 11px var(--mono); color: var(--muted); white-space: nowrap; }
+.fleg .port.r { text-align: right; }
+.layover { font-size: 12.5px; color: var(--muted); padding-left: 2px; }
+.ffoot { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+
+/* stay */
+.stay { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 24px; margin-bottom: 16px; }
+.stay div { min-width: 0; }
+.stay b { display: block; font-weight: 500; }
+.rules { margin: 0 0 16px; padding-left: 18px; color: var(--muted); font-size: 14px; display: grid; gap: 4px; }
+
+/* itinerary */
+.leg { margin-bottom: 30px; }
+.leg-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.leg-head .bar { width: 4px; height: 26px; border-radius: 2px; }
+.key { display: flex; gap: 14px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+.key span { display: inline-flex; align-items: center; gap: 6px; }
+.days { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.day { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.day.travel { border-style: dashed; }
+.day.empty { border-style: dashed; color: var(--muted); background: transparent; }
+.day-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.day-top .mono { font-size: 12px; color: var(--muted); }
+.day ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.day li { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 8px; font-size: 14px; }
+.day li .t { font: 12px/1.7 var(--mono); color: var(--muted); }
+.day li small { display: block; color: var(--muted); font-size: 12.5px; }
+.tag { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.tag.all { background: var(--jungle); }
+.tag.opt { background: none; border: 1.5px solid var(--saffron); }
+.meal { border-top: 1px solid var(--line); padding-top: 8px; font-size: 13px; color: var(--muted); }
+.meal b { color: var(--ink); font-weight: 500; }
+.sights { margin-top: 10px; font-size: 14px; color: var(--muted); }
+
+/* tables */
+.two { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); gap: 20px; }
+@media (max-width: 760px) { .two { grid-template-columns: 1fr; } }
+.tbl-wrap { overflow-x: auto; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl td { padding: 10px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+.tbl tr:first-child td { border-top: 0; }
+.tbl .amt { text-align: right; white-space: nowrap; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.tbl .sub { color: var(--muted); font-size: 12.5px; }
+.tbl tfoot td { border-top: 2px solid var(--ink); font-weight: 600; }
+.pill { display: inline-block; font: 500 11px/1 var(--body); padding: 5px 8px; border-radius: 999px; white-space: nowrap; }
+.pill.done { color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent); }
+.pill.pending { color: var(--sea); background: color-mix(in srgb, var(--sea) 14%, transparent); }
+.pill.todo { color: var(--todo); background: color-mix(in srgb, var(--todo) 14%, transparent); }
+.pill.due { color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, transparent); }
+.pill.host { color: var(--muted); background: color-mix(in srgb, var(--muted) 12%, transparent); }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 14px; }
+.checks li { display: grid; grid-template-columns: 18px minmax(0,1fr); gap: 10px; }
+.box { width: 16px; height: 16px; border: 1.5px solid var(--muted); border-radius: 4px; margin-top: 2px; }
+.box.on { background: var(--jungle); border-color: var(--jungle); }
+.checks .done span { color: var(--muted); text-decoration: line-through; }
+.checks small { display: block; color: var(--muted); font-size: 12.5px; }
+.open { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; display: grid; gap: 4px; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 16px; }
+a { color: var(--sea); }
+
+/* nav */
+nav.jump { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
+nav.jump a { text-decoration: none; color: var(--ink); font-size: 13px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+nav.jump a:hover { border-color: var(--jungle); }
+
+/* money */
+.iou { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; min-width: 0; }
+.stat b { font: 700 1.6rem/1.1 var(--display); font-variant-numeric: tabular-nums; }
+.stat.owe { border-color: var(--saffron); }
+.budget-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.budget-row:first-child { border-top: 0; }
+.budget-row .nums { font-family: var(--mono); font-size: 13px; text-align: right; white-space: nowrap; }
+.budget-row .note { grid-column: 1 / -1; color: var(--muted); font-size: 12.5px; }
+.meter { grid-column: 1 / -1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.meter span { display: block; height: 100%; background: var(--jungle); border-radius: 3px; }
+.meter span.over { background: var(--warn); }
+form.add { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; align-items: end; margin-bottom: 16px; }
+form.add .wide { grid-column: span 2; }
+@media (max-width: 480px) { form.add .wide { grid-column: 1 / -1; } }
+.field { display: grid; gap: 5px; min-width: 0; }
+.field label { font: 500 11px/1 var(--body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+input, select { font: inherit; font-size: 15px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; width: 100%; min-width: 0; }
+input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--sea); outline-offset: 2px; }
+button { font: 600 14px var(--body); border-radius: 8px; padding: 10px 14px; border: 1px solid var(--jungle); background: var(--jungle); color: var(--surface); cursor: pointer; }
+button.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+button.x { background: none; border: 0; color: var(--muted); padding: 4px 6px; font-size: 16px; }
+button.x:hover { color: var(--warn); }
+button:disabled { opacity: .5; cursor: default; }
+.sync { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.sync .ok { color: var(--ok); }
+.sync .err { color: var(--warn); }
+.ledger td { font-size: 13.5px; }
+.who { font-size: 12px; color: var(--muted); }
+details.connect { margin-top: 14px; font-size: 14px; }
+details.connect summary { cursor: pointer; color: var(--sea); }
+details.connect .inner { display: grid; gap: 10px; margin-top: 10px; max-width: 520px; }
+details.connect ol { margin: 0; padding-left: 18px; color: var(--muted); display: grid; gap: 4px; }
+
+/* currency */
+.fx { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+@media (max-width: 760px) { .fx { grid-template-columns: 1fr; } }
+.fx-in { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 10px; margin-bottom: 14px; }
+.fx-in input { font: 500 1.4rem var(--mono); }
+.fx-out { display: grid; gap: 8px; }
+.fx-out div { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding-top: 8px; }
+.fx-out b { font: 500 1.15rem var(--mono); font-variant-numeric: tabular-nums; }
+.cheat { width: 100%; border-collapse: collapse; font: 13px var(--mono); font-variant-numeric: tabular-nums; }
+.cheat th { font: 500 11px var(--body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); text-align: right; padding: 6px 8px; }
+.cheat td { text-align: right; padding: 6px 8px; border-top: 1px solid var(--line); }
+.cheat th:first-child, .cheat td:first-child { text-align: left; }
+
+/* entry requirements */
+.countries { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+.country { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.country ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 14px; }
+.country li small { display: block; color: var(--muted); font-size: 12.5px; }
+.country .when { font-size: 13px; color: var(--muted); }
+</style>
+
+<!-- ===== TRIP DATA: Claude edits this block; the page draws itself from it ===== -->
+<script type="application/json" id="trip">
+{
+  "name": "Phuket + Kuala Lumpur",
+  "status": "Leg 1 locked in",
+  "from": "Melbourne",
+  "start": "2027-02-01",
+  "travellers": "Greg + Jared",
+  "alert": { "title": "Villa balance due 1 December", "text": "Your remaining $882 for the villa goes to Jakob by Tue 1 Dec 2026. It's marked unpaid below until you tell me it's sent." },
+
+  "stops": [
+    { "id": "hkt", "name": "Phuket", "place": "Villa Namaste, Bang Tao", "code": "HKT", "lat": 7.99, "lng": 98.29, "nights": 6, "color": "#2a7f9e",
+      "summary": "Jakob's 30th: \"The Residency\". A shared villa week with a group of 9.",
+      "stay": {
+        "Where": "Villa Namaste, Bang Tao Beach",
+        "Check in": "Mon 1 Feb, 3 pm (passports to the Villa Manager)",
+        "Check out": "Sun 7 Feb, 12 pm",
+        "Your room": "King Bedroom 1, with Jared",
+        "Group": "Jakob & Jack, Greg & Jared, Saskia & Dana, Laura, Kyle, Liv",
+        "Villa": "8 m infinity pool over Bang Tao Bay, rooftop lounge, Sonos, A/C, staff and in-house chef"
+      },
+      "rules": [
+        "Solar is capped at 300 units a day; overage is split by the group. Doors and windows shut when the A/C is on.",
+        "Staff after 9 pm costs extra per person.",
+        "Meal changes go to the chef the night before. Food runs: minimum 4,000 THB plus 20%.",
+        "Food float is spent in cash. Any damage is paid by whoever caused it."
+      ],
+      "days": [
+        { "title": "The arrival", "travel": true, "items": [
+          ["07:00", "SQ248 Melbourne → Singapore", "", ""],
+          ["13:55", "SQ732 lands in Phuket, transfer to the villa", "", ""],
+          ["15:00", "Check in", "all", ""],
+          ["eve", "Dinner and drinks at the haus", "all", ""] ],
+          "meal": ["Dinner in", "Spring rolls, stir-fried calamari, sweet and sour pork, pad thai, massaman curry, stir-fried veg"] },
+        { "title": "The beach", "items": [
+          ["am", "Free time, slow breakfast", "", ""],
+          ["lunch", "Beach visit", "", ""],
+          ["14:00", "Café del Mar beach club, beachside beds", "all", "14,000 THB F&B vouchers included (about $67 pp)"] ] },
+        { "title": "The recovery", "items": [
+          ["am", "Recovery breakfast and yoga", "opt", "4,500 THB for 5 people, then 500 THB pp"],
+          ["pm", "Massages and a shared lunch", "opt", "Massage 800 THB (about $34) an hour"],
+          ["eve", "Dinner in at the haus", "all", ""] ],
+          "meal": ["Lunch + dinner in", "Lunch: corn cakes, Thai salad, chicken wings, satay, fried prawns and noodles. Dinner: pork and shrimp dumplings, pineapple fried rice, mango sticky rice"] },
+        { "title": "The voyage", "items": [
+          ["am", "Early breakfast and transport", "all", ""],
+          ["day", "Catamaran day trip", "all", "Jakob's shout"],
+          ["eve", "Transport back, dinner", "", ""] ] },
+        { "title": "The adventure", "items": [
+          ["am", "Free time", "", ""],
+          ["lunch", "Minivan into Phuket Town for sightseeing", "opt", "Van is Jakob's shout"],
+          ["eve", "Free time and dinner", "", ""] ],
+          "sights": "Options: Wat Chalong, the weekend night market, Phuket Aquarium, Promthep Cape sunset, ATV and ziplining, snorkelling, Old Phuket Town" },
+        { "title": "The finale", "items": [
+          ["day", "Free time", "", ""],
+          ["16:00", "Back at the haus", "all", ""],
+          ["eve", "Grand dinner with a hired bartender", "all", "Jakob's shout"] ],
+          "meal": ["Dinner in", "Greek and Caesar salads, pork tenderloin, pesto and pescatore pasta, garlic prawns, chocolate lava cake"] },
+        { "title": "The departure", "travel": true, "items": [
+          ["am", "Slow breakfast, pack", "", ""],
+          ["11:00", "Leave the villa (Bang Tao to the airport is about 20 min)", "", "Check-out is 12, but the flight is at 13:35"],
+          ["13:35", "AK825 Phuket → Kuala Lumpur, lands 16:15", "", ""] ] }
+      ] },
+    { "id": "kul", "name": "Kuala Lumpur", "place": "Malaysia", "code": "KUL", "lat": 3.14, "lng": 101.69, "nights": null, "color": "#7a4fb5",
+      "summary": "From Sun 7 Feb. Nights, hotel and plans still to come.",
+      "days": [] }
+  ],
+
+  "flights": [
+    { "title": "Melbourne → Phuket", "date": "Mon 1 Feb 2027", "status": "done", "statusText": "Booked",
+      "legs": [
+        { "from": "MEL", "fromT": "07:00", "to": "SIN", "toT": "11:45", "no": "SQ248", "dur": "7h 45m", "craft": "A350-900" },
+        { "from": "SIN", "fromT": "12:50", "to": "HKT", "toT": "13:55", "no": "SQ732", "dur": "2h 05m", "craft": "737 MAX 8" } ],
+      "layover": "1h 05m in Singapore",
+      "foot": ["Singapore Airlines, Economy", "25 kg checked each", "Seats TBD", "Booked via Aunt Betty", "$930.82 for 2"] },
+    { "title": "Phuket → Kuala Lumpur", "date": "Sun 7 Feb 2027", "status": "pending", "statusText": "Awaiting airline confirmation",
+      "legs": [
+        { "from": "HKT", "fromT": "13:35", "to": "KUL", "toT": "16:15", "no": "AK825", "dur": "1h 40m", "craft": "AirAsia" } ],
+      "foot": ["AirAsia, Economy, direct", "Check what bags are included", "Booked via Booking.com", "$370.98 for 2"] }
+  ],
+
+  "people": ["Greg", "Jared"],
+  "repo": "arockonalens/thailand-trip",
+  "fallbackRates": { "THB": 23.0, "MYR": 2.85, "SGD": 0.85, "date": "estimate" },
+
+  "budget": [
+    { "cat": "Flights", "planned": 1301.80, "note": "Both flights booked so far. The flight out of KL is still to come." },
+    { "cat": "Villa", "planned": 2264, "note": "$1,132 each to Jakob: the $250 deposit plus the $882 balance" },
+    { "cat": "Villa float", "planned": 520, "note": "$160 food plus $100 alcohol each, cash on arrival" },
+    { "cat": "Activities", "planned": 400, "note": "Estimate: yoga, massages, Phuket Town. Catamaran, van and bartender are Jakob's shout" },
+    { "cat": "Food & drink", "planned": 600, "note": "Estimate: lunches, breakfasts and dinners out" },
+    { "cat": "Transport", "planned": 120, "note": "Estimate: airport transfers and Grab" },
+    { "cat": "Kuala Lumpur", "planned": null, "note": "Hotel and plans to come" },
+    { "cat": "Shopping", "planned": null, "note": "" },
+    { "cat": "Other", "planned": null, "note": "" }
+  ],
+
+  "entry": [
+    { "country": "Singapore", "flag": "SG", "when": "Mon 1 Feb, transit only", "arrive": null,
+      "items": [
+        { "text": "No arrival card if you stay airside", "note": "SQ248 to SQ732 is a 1h 05m connection on one ticket. You only need the SG Arrival Card if you leave the airport.", "link": "https://www.ica.gov.sg/enter-transit-depart/entering-singapore/sg-arrival-card", "linkText": "ICA: SG Arrival Card" }
+      ] },
+    { "country": "Thailand", "flag": "TH", "when": "Arrive Mon 1 Feb, Phuket", "arrive": "2027-02-01",
+      "items": [
+        { "text": "Thailand Digital Arrival Card (TDAC)", "note": "Free. Fill it in within the 3 days before you land. Use only the official site; copycat sites charge a fee.", "link": "https://tdac.immigration.go.th", "linkText": "tdac.immigration.go.th", "window": 3 },
+        { "text": "Visa: Australians are visa-exempt for short stays", "note": "6 nights is well inside the limit, but Thailand has been changing the allowed length. Check before you go.", "link": "https://www.thaievisa.go.th", "linkText": "Thai e-Visa (official)" },
+        { "text": "Passport valid 6+ months", "note": "Counted from the day you arrive", "link": "https://www.smartraveller.gov.au/destinations/asia/thailand", "linkText": "Smartraveller: Thailand" }
+      ] },
+    { "country": "Malaysia", "flag": "MY", "when": "Arrive Sun 7 Feb, Kuala Lumpur", "arrive": "2027-02-07",
+      "items": [
+        { "text": "Malaysia Digital Arrival Card (MDAC)", "note": "Free. Fill it in within the 3 days before you land.", "link": "https://imigresen-online.imi.gov.my/mdac/main", "linkText": "MDAC (official)", "window": 3 },
+        { "text": "Visa: Australians are visa-free for short stays", "note": "Usually up to 90 days. Confirm on Smartraveller.", "link": "https://www.smartraveller.gov.au/destinations/asia/malaysia", "linkText": "Smartraveller: Malaysia" },
+        { "text": "Passport valid 6+ months", "note": "With at least 2 blank pages", "link": "https://www.imi.gov.my", "linkText": "Malaysian Immigration" }
+      ] },
+    { "country": "Before you leave", "flag": "AU", "when": "Any time before 1 Feb", "arrive": null,
+      "items": [
+        { "text": "Register for Smartraveller alerts", "note": "Free travel advice updates for both countries", "link": "https://www.smartraveller.gov.au/before-you-go/subscribe", "linkText": "Smartraveller: subscribe" },
+        { "text": "Travel insurance", "note": "Check scooter and adventure-activity cover (ATV, ziplining)", "link": "https://www.smartraveller.gov.au/before-you-go/insurance", "linkText": "Smartraveller: insurance" }
+      ] }
+  ],
+
+  "todo": [
+    { "text": "Pay Jakob the $882 villa balance", "note": "Due Tue 1 Dec 2026", "done": false },
+    { "text": "Watch for AirAsia's confirmation of AK825", "note": "Booking.com said a few hours", "done": false },
+    { "text": "Book annual leave for 1–7 Feb, plus the KL days", "note": "Jakob suggests a day either side", "done": false },
+    { "text": "Send Jakob dietary needs, breakfast opt-ins and bar pre-stock", "note": "", "done": false },
+    { "text": "Passport valid 6+ months past the trip", "note": "Thailand and Malaysia both check", "done": false },
+    { "text": "Travel insurance", "note": "", "done": false },
+    { "text": "Thailand Digital Arrival Card (TDAC)", "note": "Online, within 3 days before 1 Feb", "done": false },
+    { "text": "Malaysia Digital Arrival Card (MDAC)", "note": "Online, within 3 days before 7 Feb", "done": false },
+    { "text": "Get Thai baht cash for the float", "note": "All villa purchases are cash", "done": false },
+    { "text": "Pick seats on SQ248 and SQ732", "note": "Via Aunt Betty's Manage My Booking", "done": false }
+  ],
+  "open": [ "How many nights in Kuala Lumpur, and where you're staying", "What comes after KL, and the flight home", "Anything you want to do in KL" ]
+}
+</script>
+
+<div class="wrap">
+  <header>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span class="label" id="eyebrow"></span><span class="chip" id="status"></span></div>
+    <h1 id="title"></h1>
+    <div class="facts" id="facts"></div>
+  </header>
+
+  <div class="alert" id="alert" hidden></div>
+
+  <nav class="jump" aria-label="Sections">
+    <a href="#flights-sec">Flights</a><a href="#days">Day by day</a><a href="#money">Budget and IOU</a><a href="#currency">Currency</a><a href="#entry">Entry requirements</a><a href="#todos">To do</a>
+  </nav>
+
+  <div class="top">
+    <div class="panel">
+      <div class="label">Route</div>
+      <div class="strip" id="strip"></div>
+      <div id="stops"></div>
+    </div>
+    <div class="panel map"><div class="label">Map</div><div id="map"></div></div>
+  </div>
+
+  <section id="flights-sec">
+    <div class="sec-head"><h2>Flights</h2><span class="label" id="flightcount"></span></div>
+    <div class="flights" id="flights"></div>
+  </section>
+
+  <section id="days">
+    <div class="sec-head"><h2>Day by day</h2>
+      <div class="key"><span><i class="tag all"></i>All-in (the whole group)</span><span><i class="tag opt"></i>Opt-in, at your own cost</span></div>
+    </div>
+    <div id="legs"></div>
+  </section>
+
+  <section id="money">
+    <div class="sec-head"><h2>Budget and IOU</h2><span class="sync" id="sync"></span></div>
+    <div class="iou" id="iou"></div>
+    <div class="two">
+      <div class="panel">
+        <div class="sec-head"><h3>Add an expense</h3><span class="label">Converted to AUD at today's rate</span></div>
+        <form class="add" id="addform">
+          <div class="field wide"><label for="f-desc">What</label><input id="f-desc" required placeholder="Dinner at the night market"></div>
+          <div class="field"><label for="f-amt">Amount</label><input id="f-amt" type="number" inputmode="decimal" step="0.01" min="0" required placeholder="0.00"></div>
+          <div class="field"><label for="f-cur">Currency</label><select id="f-cur"><option>AUD</option><option>THB</option><option>MYR</option><option>SGD</option></select></div>
+          <div class="field"><label for="f-paid">Paid by</label><select id="f-paid"></select></div>
+          <div class="field"><label for="f-for">For</label><select id="f-for"></select></div>
+          <div class="field"><label for="f-cat">Category</label><select id="f-cat"></select></div>
+          <div class="field"><label for="f-date">Date</label><input id="f-date" type="date"></div>
+          <div class="field"><button type="submit" id="f-submit">Add</button></div>
+        </form>
+        <div class="tbl-wrap"><table class="tbl ledger" id="ledger"></table></div>
+        <details class="connect" id="connect">
+          <summary id="connect-sum">Connect this phone so you can add expenses</summary>
+          <div class="inner">
+            <ol>
+              <li>Greg makes one key on GitHub: <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">new fine-grained token</a>. Under repository access choose only <span class="mono">thailand-trip</span>, and under Permissions set Contents to "Read and write".</li>
+              <li>Paste it here on each phone, yours and Jared's. It stays in this browser only.</li>
+            </ol>
+            <div class="field"><label for="f-me">This phone belongs to</label><select id="f-me"></select></div>
+            <div class="field"><label for="f-token">GitHub key</label><input id="f-token" type="password" autocomplete="off" placeholder="github_pat_…"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="f-save">Save and connect</button><button type="button" class="ghost" id="f-forget">Disconnect</button></div>
+          </div>
+        </details>
+      </div>
+      <div class="panel">
+        <div class="sec-head"><h3>Budget</h3><span class="label">Both of you, AUD</span></div>
+        <div id="budget"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="currency">
+    <div class="sec-head"><h2>Currency</h2><span class="label" id="fx-src"></span></div>
+    <div class="fx">
+      <div class="panel">
+        <div class="fx-in"><input id="fx-amt" type="number" inputmode="decimal" value="1000" aria-label="Amount"><select id="fx-cur" aria-label="Currency"><option>THB</option><option>AUD</option><option>MYR</option><option>SGD</option></select></div>
+        <div class="fx-out" id="fx-out"></div>
+      </div>
+      <div class="panel"><div class="tbl-wrap"><table class="cheat" id="cheat"></table></div></div>
+    </div>
+  </section>
+
+  <section id="entry">
+    <div class="sec-head"><h2>Before you enter each country</h2><span class="label">Australian passports</span></div>
+    <div class="countries" id="countries"></div>
+  </section>
+
+  <section class="two" id="todos">
+    <div class="panel"><div class="sec-head"><h2>To do</h2><span class="label" id="todocount"></span></div><ul class="checks" id="todo"></ul></div>
+    <div class="panel" style="align-self:start"><div class="sec-head"><h2>Still to decide</h2></div><ol class="open" id="open"></ol></div>
+  </section>
+
+  <footer>Send Claude any booking, plan or change, and this page gets updated.</footer>
+</div>
+
+<script>
+const T = JSON.parse(document.getElementById('trip').textContent);
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const start = T.start ? new Date(T.start + 'T00:00:00') : null;
+const fmt = (d, o) => d.toLocaleDateString('en-AU', o);
+const dayDate = n => { const d = new Date(start); d.setDate(d.getDate() + n); return d; };
+const known = T.stops.reduce((a, s) => a + (s.nights || 0), 0);
+const anyTbc = T.stops.some(s => s.nights == null);
+const nightsLabel = n => n == null ? 'TBC' : n + (n === 1 ? ' night' : ' nights');
+const money = n => '$' + n.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// header
+$('eyebrow').textContent = 'From ' + T.from;
+$('status').textContent = T.status;
+$('title').textContent = T.name;
+const facts = [];
+if (start) {
+  const days = Math.ceil((start - new Date()) / 864e5);
+  if (days > 0) facts.push(['Countdown', days + ' days to go']);
+  facts.push(['Dates', fmt(start, {weekday:'short', day:'numeric', month:'short', year:'numeric'}) + (anyTbc ? ' → TBC' : ' → ' + fmt(dayDate(known), {day:'numeric', month:'short'}))]);
+}
+facts.push(['Length', known + (anyTbc ? '+' : '') + ' nights']);
+facts.push(['Travellers', T.travellers]);
+facts.push(['Time', 'Phuket is 4h behind Melbourne, KL 3h']);
+$('facts').innerHTML = facts.map(([k, v]) => `<div class="fact"><span class="label">${k}</span><b>${esc(v)}</b></div>`).join('');
+if (T.alert) { $('alert').hidden = false; $('alert').innerHTML = `<span class="label">${esc(T.alert.title)}</span><span>${esc(T.alert.text)}</span>`; }
+
+// route
+$('strip').innerHTML = T.stops.map(s => s.nights == null
+  ? `<span class="tbc" style="flex:3" title="${esc(s.name)}, nights TBC"></span>`
+  : `<span style="flex:${s.nights};background:${s.color}" title="${esc(s.name)}, ${s.nights} nights"></span>`).join('');
+let night = 0;
+$('stops').innerHTML = T.stops.map(s => {
+  const from = night, to = night + (s.nights || 0); night = to;
+  const when = start ? fmt(dayDate(from), {day:'numeric', month:'short'}) + ' – ' + (s.nights == null ? 'TBC' : fmt(dayDate(to), {day:'numeric', month:'short'})) : '';
+  return `<div class="stop-row"><span class="dot" style="background:${s.color}"></span>
+    <div><h3>${esc(s.name)} <span class="mono muted" style="font-size:12px">${s.code}</span></h3><p>${esc(s.place)}. ${esc(s.summary)}</p></div>
+    <div class="when"><div class="mono">${nightsLabel(s.nights)}</div><div>${when}</div></div></div>`;
+}).join('');
+
+// map: equirectangular, rough coastlines of southern Thailand and the Malay peninsula
+const B = { w: 97.4, e: 105.2, s: 0.6, n: 14.6 }, W = 300, H = Math.round(W * (B.n - B.s) / (B.e - B.w));
+const px = (lng, lat) => [ (lng - B.w) / (B.e - B.w) * W, (B.n - lat) / (B.n - B.s) * H ];
+const poly = pts => 'M' + pts.map(p => px(...p).map(v => v.toFixed(1)).join(',')).join('L') + 'Z';
+const thai = [[99.15,15.5],[100.0,15.5],[100.0,13.4],[99.95,12.6],[99.8,11.8],[99.5,11.0],[99.2,10.4],[99.25,9.3],[99.9,9.25],[100.1,8.4],[100.4,7.25],[101.0,6.85],[101.5,6.85],[102.1,6.25],[101.8,5.8],[101.1,5.7],[100.9,6.25],[100.35,6.55],[100.1,6.45],[99.7,6.9],[99.4,7.5],[98.95,8.05],[98.6,8.35],[98.3,8.35],[98.25,9.0],[98.4,9.6],[98.6,10.0],[98.75,10.6],[99.15,11.0],[99.45,11.6],[99.2,12.4],[99.15,13.2],[98.6,13.9],[98.3,15.0],[98.3,15.5]];
+const gulfE = [[100.95,15.5],[100.95,13.4],[100.9,12.7],[101.3,12.7],[102.1,12.6],[102.4,12.15],[102.9,11.65],[103.2,12.5],[103.5,15.5]];
+const malay = [[100.1,6.45],[100.35,6.55],[100.9,6.25],[101.1,5.7],[101.8,5.8],[102.1,6.25],[102.35,6.15],[103.1,5.4],[103.45,4.6],[103.45,3.8],[103.4,2.9],[103.85,2.4],[104.25,1.45],[103.5,1.35],[103.3,1.55],[102.5,2.05],[101.85,2.45],[101.35,2.95],[100.95,3.8],[100.6,4.5],[100.35,5.2],[100.3,5.9]];
+const sing = [[103.6,1.25],[104.05,1.3],[104.05,1.42],[103.65,1.45]];
+const phuketIsland = [[98.25,8.2],[98.4,8.2],[98.42,7.85],[98.35,7.75],[98.28,7.8]];
+let grid = '';
+for (let lat = 2; lat <= 14; lat += 4) { const y = px(0, lat)[1]; grid += `<line class="grid" x1="0" x2="${W}" y1="${y}" y2="${y}"/><text class="code" x="${W - 4}" y="${y - 3}" text-anchor="end">${lat}°N</text>`; }
+const pts = [{ name: 'Singapore', code: 'SIN', lat: 1.36, lng: 103.99, transit: true }, ...T.stops];
+const order = [pts[0], ...T.stops];
+const routePath = 'M' + order.map(s => px(s.lng, s.lat).map(v => v.toFixed(1)).join(',')).join('L');
+const pins = pts.map(s => {
+  const [x, y] = px(s.lng, s.lat);
+  const end = x > W * 0.6;
+  const dx = end ? -12 : 12, anchor = end ? 'end' : 'start';
+  const r = s.transit ? 4.5 : 7;
+  const sub = s.transit ? 'SIN · transit' : `${s.code} · ${s.nights == null ? 'TBC' : s.nights + 'n'}`;
+  return `<circle cx="${x}" cy="${y}" r="${r}" fill="${s.transit ? 'var(--surface)' : s.color}" stroke="${s.transit ? 'var(--ink)' : 'var(--surface)'}" stroke-width="${s.transit ? 1.5 : 2.5}"/>
+    <text x="${x + dx}" y="${y + 1}" text-anchor="${anchor}">${esc(s.name)}</text>
+    <text class="code" x="${x + dx}" y="${y + 14}" text-anchor="${anchor}">${sub}</text>`;
+}).join('');
+$('map').innerHTML = `<svg viewBox="-6 0 ${W + 12} ${H}" role="img" aria-label="Map of the route: Singapore to Phuket to Kuala Lumpur">
+  <defs><clipPath id="clip"><rect x="0" y="0" width="${W}" height="${H}"/></clipPath></defs>
+  ${grid}<g clip-path="url(#clip)"><path class="land" d="${poly(thai)}"/><path class="land" d="${poly(gulfE)}"/><path class="land" d="${poly(malay)}"/><path class="land" d="${poly(sing)}"/><path class="land" d="${poly(phuketIsland)}"/></g>
+  <text class="country" x="${px(99.0, 0)[0]}" y="${px(0, 12.2)[1]}">THAILAND</text>
+  <text class="country" x="${px(102.0, 0)[0]}" y="${px(0, 4.6)[1]}">MALAYSIA</text>
+  <text class="sea" x="${px(97.55, 0)[0]}" y="${px(0, 6.0)[1]}">Andaman Sea</text>
+  <text class="sea" x="${px(101.0, 0)[0]}" y="${px(0, 10.0)[1]}">Gulf of Thailand</text>
+  <text class="sea" x="${px(98.6, 0)[0]}" y="${px(0, 2.6)[1]}">Strait of Malacca</text>
+  <path class="route" d="${routePath}"/>${pins}</svg>`;
+
+// flights
+$('flightcount').textContent = T.flights.length + ' booked';
+$('flights').innerHTML = T.flights.map(f => {
+  const legs = f.legs.map((l, i) => `${i && f.layover ? `<div class="layover">${esc(f.layover)}</div>` : ''}
+    <div class="fleg"><div class="port">${l.from}<small>${l.fromT}</small></div>
+    <div class="line"><span>${esc(l.no)} · ${esc(l.dur)}</span></div>
+    <div class="port r">${l.to}<small>${l.toT}</small></div></div>`).join('');
+  return `<div class="flight"><div class="row"><h3>${esc(f.title)}</h3><span class="pill ${f.status}">${esc(f.statusText)}</span></div>
+    <div class="label">${esc(f.date)}</div><div class="legs">${legs}</div>
+    <div class="ffoot">${f.foot.map(x => `<span>${esc(x)}</span>`).join('')}</div></div>`;
+}).join('');
+
+// day by day
+let dayN = 0;
+$('legs').innerHTML = T.stops.map(s => {
+  let head = `<div class="leg-head"><span class="bar" style="background:${s.color}"></span><h2>${esc(s.name)}</h2><span class="label">${nightsLabel(s.nights)}</span></div>`;
+  if (s.stay) head += `<div class="panel" style="margin-bottom:14px"><div class="stay">${Object.entries(s.stay).map(([k, v]) => `<div><span class="label">${esc(k)}</span><b>${esc(v)}</b></div>`).join('')}</div>
+    <div class="label" style="margin-bottom:6px">House rules</div><ul class="rules">${s.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ul></div>`;
+  if (!s.days.length) {
+    const d = start ? fmt(dayDate(dayN - 1), {weekday:'short', day:'numeric', month:'short'}) : '';
+    return head + `<div class="days"><div class="day empty"><div class="day-top"><span class="mono">From ${d}</span></div><h3>Plans to come</h3><span>Send the hotel, how long you're staying and what you want to do.</span></div></div>`;
+  }
+  const cards = s.days.map(d => {
+    const n = dayN++;
+    const date = start ? fmt(dayDate(n), {weekday:'short', day:'numeric', month:'short'}) : '';
+    const items = d.items.map(([t, txt, tag, note]) => `<li><span class="t">${esc(t)}</span><span>${tag ? `<i class="tag ${tag}"></i>` : ''}${esc(txt)}${note ? `<small>${esc(note)}</small>` : ''}</span></li>`).join('');
+    const meal = d.meal ? `<div class="meal"><b>${esc(d.meal[0])}:</b> ${esc(d.meal[1])}</div>` : '';
+    const sights = d.sights ? `<div class="sights">${esc(d.sights)}</div>` : '';
+    return `<div class="day${d.travel ? ' travel' : ''}"><div class="day-top"><span class="mono">Day ${n + 1}${date ? ' · ' + date : ''}</span>${d.travel ? '<span class="label">Travel</span>' : ''}</div><h3>${esc(d.title)}</h3><ul>${items}</ul>${sights}${meal}</div>`;
+  }).join('');
+  return `<div class="leg">${head}<div class="days">${cards}</div></div>`;
+}).join('');
+
+// ===== money: rates, shared ledger, IOU, budget =====
+const P = T.people, [A, Bp] = P;
+const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} } };
+let rates = { AUD: 1, ...T.fallbackRates }; // units of currency per 1 AUD
+let ledger = [], sha = null, syncState = '', syncCls = '';
+const toAUD = (amt, cur) => cur === 'AUD' ? amt : amt / rates[cur];
+const fmtCur = (n, cur) => cur === 'AUD' ? money(n) : n.toLocaleString('en-AU', { maximumFractionDigits: cur === 'THB' ? 0 : 2, minimumFractionDigits: cur === 'THB' ? 0 : 2 }) + ' ' + cur;
+
+async function loadRates() {
+  try {
+    const r = await fetch('https://api.frankfurter.app/latest?from=AUD&to=THB,MYR,SGD');
+    if (!r.ok) throw 0;
+    const j = await r.json();
+    rates = { AUD: 1, ...j.rates, date: j.date };
+    $('fx-src').textContent = 'Live rate, ' + j.date;
+  } catch { $('fx-src').textContent = 'Offline estimate: 1 AUD ≈ ' + rates.THB + ' THB'; }
+  renderFx();
+}
+
+// --- GitHub-backed ledger (expenses.json in the repo) ---
+const api = `https://api.github.com/repos/${T.repo}/contents/expenses.json`;
+const token = () => store.get('tt_token');
+const b64 = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
+const unb64 = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g, '')), c => c.charCodeAt(0)));
+function setSync(msg, cls = '') { syncState = msg; syncCls = cls; renderSync(); }
+function renderSync() {
+  const t = token(), me = store.get('tt_me');
+  $('sync').innerHTML = `<span class="${syncCls}">${esc(syncState)}</span>${t ? `<span>· ${esc(me || 'connected')}</span>` : ''}`;
+  $('connect-sum').textContent = t ? `Connected as ${me || 'this phone'}. Change` : 'Connect this phone so you can add expenses';
+  $('f-submit').disabled = !t;
+  $('f-submit').title = t ? '' : 'Connect this phone first (below)';
+}
+async function fetchLedger() {
+  const h = { Accept: 'application/vnd.github+json' };
+  if (token()) h.Authorization = 'Bearer ' + token();
+  const r = await fetch(api + '?ref=main&t=' + Date.now(), { headers: h, cache: 'no-store' });
+  if (!r.ok) throw new Error(r.status === 401 ? 'GitHub key not accepted' : 'Could not load (' + r.status + ')');
+  const j = await r.json();
+  return { list: JSON.parse(unb64(j.content)), sha: j.sha };
+}
+async function load() {
+  setSync('Loading…');
+  try { ({ list: ledger, sha } = await fetchLedger()); setSync('Up to date', 'ok'); }
+  catch (e) {
+    try { const r = await fetch('expenses.json', { cache: 'no-store' }); ledger = await r.json(); setSync('Read-only copy', ''); }
+    catch { setSync(e.message, 'err'); }
+  }
+  renderMoney();
+}
+async function mutate(fn, msg) {
+  if (!token()) { setSync('Connect this phone to save', 'err'); return false; }
+  for (let i = 0; i < 3; i++) {
+    try {
+      const cur = await fetchLedger();
+      const next = fn(cur.list);
+      setSync('Saving…');
+      const r = await fetch(api, { method: 'PUT', headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + token() },
+        body: JSON.stringify({ message: msg, content: b64(JSON.stringify(next, null, 1) + '\n'), sha: cur.sha, branch: 'main' }) });
+      if (r.status === 409 || r.status === 422) continue; // someone else saved first: reload and retry
+      if (!r.ok) throw new Error(r.status === 401 || r.status === 403 ? 'GitHub key can\'t write. Check its Contents permission' : 'Save failed (' + r.status + ')');
+      sha = (await r.json()).content.sha; ledger = next;
+      setSync('Saved', 'ok'); renderMoney(); return true;
+    } catch (e) { setSync(e.message, 'err'); return false; }
+  }
+  setSync('Save clashed with another edit. Try again', 'err'); return false;
+}
+
+// --- IOU: positive = Bp owes A ---
+function balance() {
+  let owed = 0;
+  for (const e of ledger) {
+    const share = e.for === 'both' ? e.aud / 2 : e.aud;
+    if (e.for === 'both' || e.for !== e.paidBy) owed += e.paidBy === A ? share : -share;
+  }
+  return Math.round(owed * 100) / 100;
+}
+function renderMoney() {
+  const real = ledger.filter(e => e.cat !== 'Settle up');
+  const spent = real.reduce((a, e) => a + e.aud, 0);
+  const each = p => real.reduce((a, e) => a + (e.for === 'both' ? e.aud / 2 : e.for === p ? e.aud : 0), 0);
+  const paidBy = p => real.reduce((a, e) => a + (e.paidBy === p ? e.aud : 0), 0);
+  const bal = balance();
+  const iouText = Math.abs(bal) < 0.01 ? 'All square' : `${bal > 0 ? Bp : A} owes ${bal > 0 ? A : Bp}`;
+  $('iou').innerHTML = `
+    <div class="stat${Math.abs(bal) >= 0.01 ? ' owe' : ''}"><span class="label">IOU</span><b>${Math.abs(bal) < 0.01 ? '$0' : money(Math.abs(bal))}</b><span class="muted" style="font-size:13px">${iouText}</span></div>
+    <div class="stat"><span class="label">Spent so far</span><b>${money(spent)}</b><span class="muted" style="font-size:13px">${real.length} expenses</span></div>
+    ${P.map(p => `<div class="stat"><span class="label">${p}'s share</span><b>${money(each(p))}</b><span class="muted" style="font-size:13px">Paid ${money(paidBy(p))}</span></div>`).join('')}`;
+
+  const rows = [...ledger].sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.id - a.id);
+  $('ledger').innerHTML = rows.length ? '<tbody>' + rows.map(e => `<tr>
+    <td><div>${esc(e.desc)}</div><div class="who">${esc(e.date || '')} · ${esc(e.cat)} · ${esc(e.paidBy)} paid${e.for === 'both' ? ', split 50/50' : e.for === e.paidBy ? ', just for ' + esc(e.paidBy) : ' for ' + esc(e.for)}</div></td>
+    <td class="amt">${money(e.aud)}${e.cur !== 'AUD' ? `<div class="who">${fmtCur(e.amount, e.cur)}</div>` : ''}</td>
+    <td style="width:30px"><button class="x" data-del="${e.id}" aria-label="Delete ${esc(e.desc)}" title="Delete">×</button></td></tr>`).join('') + '</tbody>'
+    : '<tbody><tr><td class="muted">Nothing added yet.</td></tr></tbody>';
+
+  const byCat = {}; real.forEach(e => byCat[e.cat] = (byCat[e.cat] || 0) + e.aud);
+  const planned = T.budget.reduce((a, b) => a + (b.planned || 0), 0);
+  $('budget').innerHTML = T.budget.map(b => {
+    const s = byCat[b.cat] || 0, pct = b.planned ? Math.min(100, s / b.planned * 100) : 0;
+    return `<div class="budget-row"><span>${esc(b.cat)}</span><span class="nums">${money(s)} / ${b.planned == null ? 'TBC' : money(b.planned)}</span>
+      ${b.planned ? `<div class="meter"><span class="${s > b.planned ? 'over' : ''}" style="width:${pct}%"></span></div>` : ''}
+      ${b.note ? `<span class="note">${esc(b.note)}</span>` : ''}</div>`;
+  }).join('') + `<div class="budget-row" style="border-top:2px solid var(--ink);font-weight:600"><span>Total</span><span class="nums">${money(spent)} / ${money(planned)}</span><span class="note" style="font-weight:400">${money(planned - spent)} of the plan still to spend. KL is not counted yet.</span></div>`;
+}
+
+// --- form ---
+const opt = (v, t = v) => `<option value="${esc(v)}">${esc(t)}</option>`;
+$('f-paid').innerHTML = P.map(p => opt(p)).join('');
+$('f-me').innerHTML = P.map(p => opt(p)).join('');
+$('f-for').innerHTML = opt('both', 'Both (split 50/50)') + P.map(p => opt(p, 'Just ' + p)).join('');
+$('f-cat').innerHTML = [...T.budget.map(b => b.cat), 'Settle up'].map(c => opt(c)).join('');
+$('f-date').value = new Date().toLocaleDateString('en-CA');
+if (store.get('tt_me')) { $('f-paid').value = store.get('tt_me'); $('f-me').value = store.get('tt_me'); }
+$('f-cat').addEventListener('change', () => {
+  if ($('f-cat').value === 'Settle up') { const p = $('f-paid').value; $('f-for').value = P.find(x => x !== p); if (!$('f-desc').value) $('f-desc').value = 'Paying back'; }
+});
+$('addform').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const amount = parseFloat($('f-amt').value), cur = $('f-cur').value;
+  if (!(amount > 0)) return;
+  const e = { id: Date.now(), date: $('f-date').value, desc: $('f-desc').value.trim(), amount, cur,
+    aud: Math.round(toAUD(amount, cur) * 100) / 100, rate: cur === 'AUD' ? 1 : rates[cur],
+    paidBy: $('f-paid').value, for: $('f-for').value, cat: $('f-cat').value, by: store.get('tt_me') || '' };
+  $('f-submit').disabled = true;
+  if (await mutate(list => [...list, e], `Add: ${e.desc} (${fmtCur(amount, cur)})`)) { $('f-desc').value = ''; $('f-amt').value = ''; }
+  $('f-submit').disabled = !token();
+});
+$('ledger').addEventListener('click', async ev => {
+  const b = ev.target.closest('[data-del]'); if (!b) return;
+  if (b.dataset.armed) { const id = +b.dataset.del; const e = ledger.find(x => x.id === id); await mutate(list => list.filter(x => x.id !== id), `Delete: ${e ? e.desc : id}`); }
+  else { b.dataset.armed = 1; b.textContent = 'Delete?'; b.style.fontSize = '12px'; setTimeout(() => { if (b.isConnected) { delete b.dataset.armed; b.textContent = '×'; b.style.fontSize = ''; } }, 3000); }
+});
+$('f-save').addEventListener('click', () => {
+  const t = $('f-token').value.trim(); if (t) store.set('tt_token', t);
+  store.set('tt_me', $('f-me').value); $('f-paid').value = $('f-me').value; $('f-token').value = '';
+  $('connect').open = false; load();
+});
+$('f-forget').addEventListener('click', () => { store.set('tt_token', null); renderSync(); setSync('Disconnected'); });
+
+// --- currency ---
+function renderFx() {
+  const amt = parseFloat($('fx-amt').value) || 0, cur = $('fx-cur').value, aud = toAUD(amt, cur);
+  $('fx-out').innerHTML = ['AUD', 'THB', 'MYR', 'SGD'].filter(c => c !== cur).map(c => `<div><span class="label">${c}</span><b>${fmtCur(c === 'AUD' ? aud : aud * rates[c], c)}</b></div>`).join('');
+  const thb = [20, 100, 500, 800, 1000, 4000, 14000], myr = [10, 50, 100, 200, 500];
+  $('cheat').innerHTML = `<thead><tr><th>Baht</th><th>AUD</th><th>Ringgit</th><th>AUD</th></tr></thead><tbody>` +
+    thb.map((t, i) => `<tr><td>${t.toLocaleString('en-AU')} ฿</td><td>${money(t / rates.THB)}</td><td>${myr[i] != null ? 'RM ' + myr[i] : ''}</td><td>${myr[i] != null ? money(myr[i] / rates.MYR) : ''}</td></tr>`).join('') + '</tbody>';
+}
+$('fx-amt').addEventListener('input', renderFx);
+$('fx-cur').addEventListener('change', renderFx);
+
+// --- entry requirements ---
+$('countries').innerHTML = T.entry.map(c => {
+  let when = esc(c.when);
+  return `<div class="country"><div class="row" style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><h3>${esc(c.country)}</h3><span class="mono muted" style="font-size:12px">${c.flag}</span></div>
+    <div class="when">${when}</div><ul>${c.items.map(it => {
+      let win = '';
+      if (it.window && c.arrive) { const d = new Date(c.arrive + 'T00:00:00'), s = new Date(d); s.setDate(d.getDate() - it.window);
+        win = ` Window: ${fmt(s, {weekday:'short', day:'numeric', month:'short'})} to ${fmt(d, {weekday:'short', day:'numeric', month:'short'})}.`; }
+      return `<li>${esc(it.text)}<small>${esc(it.note)}${win}</small><small><a href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.linkText)} ↗</a></small></li>`;
+    }).join('')}</ul></div>`;
+}).join('');
+
+renderSync(); renderFx(); renderMoney(); load(); loadRates();
+
+// todo + open
+$('todocount').textContent = T.todo.filter(t => t.done).length + ' of ' + T.todo.length + ' done';
+$('todo').innerHTML = T.todo.map(t => `<li class="${t.done ? 'done' : ''}"><span class="box${t.done ? ' on' : ''}"></span><span>${esc(t.text)}${t.note ? `<small>${esc(t.note)}</small>` : ''}</span></li>`).join('');
+$('open').innerHTML = T.open.map(o => `<li>${esc(o)}</li>`).join('');
+</script>
