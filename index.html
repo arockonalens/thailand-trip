@@ -1220,7 +1220,9 @@ const opt = (v, t = v) => `<option value="${esc(v)}">${esc(t)}</option>`;
 $('f-paid').innerHTML = P.map(p => opt(p)).join('') + opt('Saver', 'Thailand saver');
 $('f-me').innerHTML = P.map(p => opt(p)).join('');
 $('f-for').innerHTML = opt('both', '50/50') + P.map(p => opt(p, 'Just ' + p)).join('');
-$('f-cat').innerHTML = [...T.budget.map(b => b.cat), 'Settle up', 'Saver top-up'].map(c => opt(c)).join('');
+const noPick = ['Flights']; // all flights are booked; old flight entries keep their category
+$('f-cat').innerHTML = [...T.budget.map(b => b.cat).filter(c => !noPick.includes(c)), 'Settle up', 'Saver top-up'].map(c => opt(c)).join('');
+$('f-cat').value = 'Food & drink';
 $('f-date').value = new Date().toLocaleDateString('en-CA');
 if (store.get('tt_me')) { $('f-paid').value = store.get('tt_me'); $('f-me').value = store.get('tt_me'); }
 $('f-cat').addEventListener('change', () => {
