@@ -27,14 +27,8 @@
   --font: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
   --r: 12px;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #0f1312; --surface: #161b19; --sunken: #1b211f; --ink: #edf1ef; --ink-2: #b9c2be; --muted: #87918d; --line: #262d2a;
-  --accent: #5cc4a8; --accent-soft: #173029; --slate: #9aa9c8; --warn: #f0a46a; --warn-soft: #33241a; --ok: #6ccf98; --ok-soft: #17301f;
-  --info: #8cc0e8; --info-soft: #172633; --land: #1e2523; color-scheme: dark } }
-:root[data-theme="dark"] {
-  --bg: #0f1312; --surface: #161b19; --sunken: #1b211f; --ink: #edf1ef; --ink-2: #b9c2be; --muted: #87918d; --line: #262d2a;
-  --accent: #5cc4a8; --accent-soft: #173029; --slate: #9aa9c8; --warn: #f0a46a; --warn-soft: #33241a; --ok: #6ccf98; --ok-soft: #17301f;
-  --info: #8cc0e8; --info-soft: #172633; --land: #1e2523; color-scheme: dark }
+/* Always light: Greg asked for no dark mode */
+:root { color-scheme: light; }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 72px; }
