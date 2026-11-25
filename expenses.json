@@ -8,5 +8,6 @@
  {"id": 1763791200000, "date": "2026-11-22", "desc": "Jared into the saver", "amount": 465, "cur": "AUD", "aud": 465, "rate": 1, "paidBy": "Jared", "for": "Saver", "cat": "Saver top-up", "by": "Claude"},
  {"id": 1746057600000, "date": "2026-05-01", "desc": "Villa deposit to Jakob", "amount": 250, "cur": "AUD", "aud": 250, "rate": 1, "paidBy": "Greg", "for": "Greg", "cat": "Villa", "by": "Claude"},
  {"id": 1763800000000, "date": "2026-11-22", "desc": "The RuMa Hotel, Kuala Lumpur (3 nights)", "amount": 2554.8, "cur": "AUD", "aud": 2554.8, "rate": 1, "paidBy": "Saver", "for": "both", "cat": "Kuala Lumpur", "by": "Claude"},
- {"id": 1763802000000, "date": "2026-11-22", "desc": "Jared into the saver", "amount": 882, "cur": "AUD", "aud": 882, "rate": 1, "paidBy": "Jared", "for": "Saver", "cat": "Saver top-up", "by": "Claude"}
+ {"id": 1763802000000, "date": "2026-11-22", "desc": "Jared into the saver", "amount": 882, "cur": "AUD", "aud": 882, "rate": 1, "paidBy": "Jared", "for": "Saver", "cat": "Saver top-up", "by": "Claude"},
+ {"id": 1795603379353, "date": "2026-11-25", "desc": "Jared into the saver", "amount": 143, "cur": "AUD", "aud": 143, "rate": 1, "paidBy": "Jared", "for": "Saver", "cat": "Saver top-up", "by": "Claude"}
 ]
